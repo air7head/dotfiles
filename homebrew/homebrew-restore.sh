@@ -1,0 +1,65 @@
+#!/bin/bash
+
+failed_items=""
+function install_package() {
+echo EXECUTING: brew install $1 $2
+brew install $1 $2
+[ $? -ne 0 ] && $failed_items="$failed_items $1" # package failed to install.
+}
+brew tap caskroom/cask
+brew tap homebrew/dupes
+brew tap homebrew/versions
+install_package ack ''
+install_package autoconf ''
+install_package automake ''
+install_package autossh ''
+install_package brew-cask ''
+install_package cmake ''
+install_package coreutils ''
+install_package cscope ''
+install_package csshx ''
+install_package ctags ''
+install_package elasticsearch ''
+install_package ffind ''
+install_package fontconfig ''
+install_package freetype ''
+install_package gd ''
+install_package gdbm ''
+install_package gettext ''
+install_package git ''
+install_package gnu-sed ''
+install_package gnu-tar ''
+install_package gnuplot ''
+install_package hadoop ''
+install_package hbase ''
+install_package htop-osx ''
+install_package jpeg ''
+install_package jsonpp ''
+install_package lesspipe ''
+install_package libevent ''
+install_package libpng ''
+install_package libtiff ''
+install_package libtool ''
+install_package libyaml ''
+install_package lua ''
+install_package lzo ''
+install_package lzop ''
+install_package macvim ''
+install_package maven ''
+install_package mysql ''
+install_package openssl ''
+install_package pcre ''
+install_package pkg-config ''
+install_package pv ''
+install_package python ''
+install_package readline ''
+install_package redis ''
+install_package ruby ''
+install_package solr ''
+install_package sqlite ''
+install_package task ''
+install_package tmux ''
+install_package tree ''
+install_package xz ''
+install_package zsh ''
+[ -z $failed_items ] || (echo The following items were failed to install: && echo ${failed_items})

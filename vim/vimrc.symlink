@@ -1,0 +1,630 @@
+" .vimrc
+" Author: Avik Sinharoy
+
+
+filetype off
+
+" Pathogen setup: call pathogen#infect()
+
+"Vundle setup: set the runtime path to include vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+Plugin 'gmarik/Vundle.vim'        "let Vundle manage Vundle, required
+Plugin 'Lokaltog/vim-easymotion'
+Plugin 'Shougo/unite.vim'
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'bling/vim-airline'
+Plugin 'scrooloose/nerdtree'
+Plugin 'scrooloose/syntastic'
+Plugin 'tpope/vim-fugitive'
+Plugin 'vim-ruby/vim-ruby'
+"if has('gui_running')
+  Plugin 'farseer90718/vim-taskwarrior'
+"endif
+
+call vundle#end()  
+
+" Solarized setup
+syntax enable
+:let g:solarized_termtrans = 1
+call togglebg#map("<F4>")
+color solarized
+
+filetype plugin indent on
+set nocompatible
+set t_Co=256    "Use 256 color schemes in vim
+
+:let mapleader = "\\"
+:let g:mapleader = "\\"
+
+"Powerline setup
+":let g:Powerline_symbols='fancy'
+" Airline > powerline
+let g:airline_powerline_fonts = 1
+
+" Backups {{{
+"set backupdir=~/.vim_backup   " undo files
+set directory=~/.vim_backup   " Swap files
+"set undodir=~/.vim_undo       " undo files
+set backup
+" }}}
+
+" Options {{{
+set autoindent            " always set autoindenting on
+set autoread              " autoread when a file is changed outside
+set background=light      " hint for colorschemes etc
+set backspace=2           " allow backspacing over everything in insert mode
+set cindent shiftwidth=4  " Same thing with cindent
+set cursorline            " Hilight line under cursor with hl-cursorline
+set diffopt=filler,iwhite " keep files synced and ignore whitespace
+set encoding=utf-8        " UTF-8 encoding enforced. Defaults to $LANG env var.
+set guioptions-=T         " Remove toolbar from gui.
+set guioptions-=m         " Remove menu from the gui
+set helpfile=$VIMRUNTIME/doc/help.txt
+set hidden                " hide buffers instead of closing
+set history=50            " keep 50 lines of command line history
+set isk+=$,%,#
+"set list
+set listchars=tab:>.,trail:.,extends:\#,nbsp:. "Highligt problematic whitespaces
+set matchtime=5          " Time to flash the brack with showmatch
+set modeline
+set modelines=10
+set nobackup              " Don't keep a backup file
+set nocompatible          " Use Vim defaults (much better!)
+set noequalalways         " Hack so ZoomWin toggle does not make everything equal size
+set nofen                 " disable folds
+set noswapfile            " Don't use irritating temp files
+"set notimeout             " i like to be pokey
+"set nottimeout            " take as long as i like to type commands
+set number                " Show line numbers
+set path+=.,..,../..,../../..,../../../..,/usr/include
+"set relativenumber        " Show linenumbers relative to current position
+set scrolloff=3           " dont let the curser get too close to the edge
+set shell=/bin/zsh
+set suffixes=.bak,~,.swp,.o,.info,.aux,.log,.dvi,.bbl,.blg,.brf,.cb,.ind,.idx,.ilg,.inx,.out,.toc,.class " lower priority suffixes
+"set tags+=./.tags,.tags,../.tags,../../.tags " set ctags
+set timeoutlen=500      " Time to wait for a map sequence to complete
+set ttimeoutlen=100     " time to wait for a key code to complete
+set ttyfast               " Indicates a fast terminal - better for screen redraws
+"set undofile
+set viminfo='20,\"50
+set virtualedit=block,onemore                 " let blocks be in virutal edit mode, move one position beyond end of line
+set whichwrap+=<,>,[,],h,l,~                  " arrow keys can wrap in normal and insert modes
+set wildignore+=*.o,*.obj,*.class,.git,*.rbc
+set wildmenu                                  " This is used with wildmode(full) to cycle options
+set wildmode=list:longest,list:full           " list all options, match to the longest
+set ttymouse=xterm2
+set mouse=a
+syntax on
+" }}}
+
+" Variables {{{
+"don't automatically spell check!
+let spell_auto_type=""
+" LargeFile.vim settings
+" don't run syntax and other expensive things on files larger than NUM megs
+let g:LargeFile = 100
+" Enable syntastic syntax checking
+let g:syntastic_enable_signs=1
+let g:LargeFile = 1000
+" }}}
+
+" Search/Move {{{
+set hlsearch              " Hilight search strings
+set ignorecase            " Do case insensitive matching
+set incsearch             " Incremental search
+set smartcase             " Use case sensitice search if search string contains uppercase chars
+set showmatch             " Show matching brackets.
+set gdefault              " Replace on entire line by default. Override with /g
+
+" Use standard regex in search instead of Vim's regex
+nnoremap / /\v
+vnoremap / /\v
+
+"Clear a search after we are done
+nnoremap <leader><space> :noh<cr>
+runtime macros/matchit.vim
+
+nnoremap Y y$
+nnoremap D d$
+
+" search next/previous -- center in page
+nmap n nzz
+nmap N Nzz
+nmap * *Nzz
+nmap # #nzz
+
+" Keep visual pattern selected after an indentation move
+"vnoremap < <gv
+"vnoremap > >gv
+
+nnoremap L $
+vnoremap L $
+onoremap L $
+
+function! CmdLine(str)
+  exe "menu Foo.Bar :" . a:str
+  emenu Foo.Bar
+  unmenu Foo
+endfunction
+
+" From an idea by Michael Naumann
+function! VisualSearch(direction) range
+  let l:saved_reg = @"
+  execute "normal! vgvy"
+
+  let l:pattern = escape(@", '\\/.*$^~[]')
+  let l:pattern = substitute(l:pattern, "\n$", "", "")
+
+  if a:direction == 'b'
+    execute "normal ?" . l:pattern . "^M"
+  elseif a:direction == 'gv'
+    call CmdLine("vimgrep " . '/'. l:pattern . '/' . ' **/*.')
+  elseif a:direction == 'f'
+    execute "normal /" . l:pattern . "^M"
+  endif
+
+  let @/ = l:pattern
+  let @" = l:saved_reg
+endfunction
+
+"Basically you press * or # to search for the current selection
+vnoremap <silent> * :call VisualSearch('f')<CR>
+vnoremap <silent> # :call VisualSearch('b')<CR>
+vnoremap <silent> gv :call VisualSearch('gv')<CR>
+
+" Pull word under cursor into LHS of a substitute
+:nmap <leader>s	:%s#\<<c-r>=expand("<cword>")<cr>\>#
+" Pull Visually Highlighted text into LHS of a substitute
+:vmap <leader>s :<C-U>%s/\<<c-r>*\>/
+
+" }}}
+"
+
+" Tabs, Spaces, Wrapping {{{
+set shiftwidth=2          " Set indention level to be the same as softtabstop
+set softtabstop=2         " Why are tabs so big?  This fixes it
+set tabstop=2
+set expandtab             " Get rid of tabs altogether and replace with spaces
+set linebreak             " This displays long lines as wrapped at word boundries
+set textwidth=0           " Don't wrap words by default
+set formatoptions=qrn1
+"set colorcolumn=85
+" }}}
+
+" Folding {{{
+
+set foldcolumn=2          " Reserve space on left for folding info
+set foldlevel=0           " show contents of all folds
+set foldmethod=indent     " use indent unless overridden
+set foldlevelstart=0      " Start editing with all fold closed
+
+" Space to toggle folding in normal mode
+"nnoremap <Space> zA
+" nnoremap  <silent>  <space> :exe 'silent! normal! za'.(foldlevel('.')?'':'1')<cr>
+
+" Space to create folds in visual mode
+vnoremap <Space> zf
+nnoremap zO zCzO
+
+function! MyFoldText() " {{{
+  let line = getline(v:foldstart)
+
+  let nucolwidth = &fdc + &number * &numberwidth
+  let windowwidth = winwidth(0) - nucolwidth - 3
+  let foldedlinecount = v:foldend - v:foldstart
+
+  " expand tabs into spaces
+  let onetab = strpart('          ', 0, &tabstop)
+  let line = substitute(line, '\t', onetab, 'g')
+
+  let line = strpart(line, 0, windowwidth - 2 -len(foldedlinecount))
+  let fillcharcount = windowwidth - len(line) - len(foldedlinecount) - 4
+  return line . '…' . repeat(" ",fillcharcount) . foldedlinecount . '…' . ' '
+endfunction " }}}
+set foldtext=MyFoldText()
+" }}}
+
+" StatusLine {{{
+set laststatus=2          " always have status bar
+set ruler                 " Show the posution in the file on the status line
+set showcmd               " Show (partial) command in status line.
+if has('statusline')
+  " status line detail:
+  " %f                file path
+  " %y                file type between braces
+  " %([%R%M]%)        fileflags between braces
+  " %{'!'[&ff=='default_file_format']}
+  "                   shows a '!' if the fileformat
+  "                   is not the platform default
+  " %{'$'[!&list]}    shows a '*' if in list mode
+  " %{'~'[&pm=='']}   shows a '~' if in patchmode
+  " (%{synIDattr(synID(line('.'),col('.'),0),'name')})
+  "                   only for debug : display the
+  "                   current syntax item name
+  " %=                right-align following items
+  " #%n               buffer number
+  " %l/%L,%c%V        line number, total number of
+  "                   lines, and column number
+  function! SetStatusLineStyle()
+    if &stl == '' || &stl =~ 'synID'
+      let &stl="%f %([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]}%{'~'[&pm=='']}%=#%n %l/%L,%c%V "
+    else
+      let &stl="%f %y%([%R%M]%)%{'!'[&ff=='".&ff."']}%{'$'[!&list]} (%{synIDattr(synID(line('.'),col('.'),0),'name')})%=#%n %l/%L,%c%V "
+    endif
+  endfunc
+  " switch between the normal and vim-debug modes in
+  " the status line
+  nmap _ds :call SetStatusLineStyle()<CR>
+  call SetStatusLineStyle()
+endif
+" }}}
+
+" Plugins {{{
+" NERDTree {{{
+"autocmd VimEnter * NERDTree      "Start VIM with NERDTree window open
+"autocmd VimEnter * wincmd p
+let NERDTreeIgnore=['\.rbc$', '\~$', 'Icon*', 'public/*', 'tmp/*', 'tags']
+map <Leader>n :NERDTreeToggle<CR>
+
+" Quit NERDTree if it is the only window left
+"autocmd WinEnter * call s:CloseIfOnlyNerdTreeLeft()
+
+" Close all open buffers on entering a window if the only
+" buffer that's left is the NERDTree buffer
+function! s:CloseIfOnlyNerdTreeLeft()
+  if exists("t:NERDTreeBufName")
+    if bufwinnr(t:NERDTreeBufName) != -1
+      if winnr("$") == 1
+        q
+      endif
+    endif
+  endif
+endfunction
+
+"}}}
+" TAGList {{{
+if 0
+  let Tlist_Close_On_Select = 0 "close taglist window once we selected something
+  let Tlist_Exit_OnlyWindow = 1 "if taglist window is the only window left, exit vim
+  let Tlist_Show_Menu = 1 "show Tags menu in gvim
+  let Tlist_Show_One_File = 1 "show tags of only one file
+  let Tlist_GainFocus_On_ToggleOpen = 1 "automatically switch to taglist window
+  let Tlist_Highlight_Tag_On_BufEnter = 1 "highlight current tag in taglist window
+  let Tlist_Process_File_Always = 1 "even without taglist window, create tags file, required for displaying tag in statusline
+  let Tlist_Use_Right_Window = 1 "display taglist window on the right
+  let Tlist_Display_Prototype = 1 "display full prototype instead of just function name
+  let Tlist_Ctags_Cmd = "/opt/local/bin/ctags"
+
+  nnoremap <F7> :TlistShowPrototype
+
+  "set statusline=[%n]\ %<%f\ %([%1*%M%*%R%Y]%)\ \ \ [%{Tlist_Get_Tagname_By_Line()}]\ %=%-19(\LINE\ [%l/%L]\ COL\ [%02c%03V]%)\ %P
+  set updatetime=1000 "interval to update list window
+
+  "let Tlist_Auto_Open=1 "Auto open the list window
+  let Tlist_Compact_Format=1
+  "let Tlist_Ctags_Cmd = g:ApolloRoot . '/bin/ctags' "Ctags binary to use
+  let Tlist_Enable_Fold_Column=0 "Turn off the fold column for list window
+  "let Tlist_Exit_OnlyWindow=1 "Exit if list is only window
+  let Tlist_File_Fold_Auto_Close=1
+  "let Tlist_Show_Menu=1 "Show tag menu in gvim
+  "let Tlist_Use_Right_Window = 1 "put list window on the rigth
+
+  "maps to close, and open list window
+  map <silent> <Leader>tc :TlistClose<CR>
+  map <silent> <Leader>to :TlistOpen<CR>
+endif
+"}}}
+" Command-T {{{
+let g:CommandTMaxHeight=20
+"}}}
+" ZoomWin {{{
+map <Leader>= :ZoomWin<CR>
+"}}}
+" CTags {{{
+map <Leader>rt :!ctags --extra=+f -R *<CR><CR>
+if has("autocmd")
+  "au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+  "     \| exe "normal g'\"" | endif
+endif
+"}}}
+" Eclim {{{
+" If set to 0 disables automatic source code validation
+" g:EclimJavaSrcValidate=0 " Default (1)
+
+" If set to 'severity' sorts the validation errors by severity (errors > warnings etc.)
+" g:EclimValidateSortResults='severity' (Default: ‘occurrence’)
+" }}}
+"}}}
+
+" Utility Functions {{{
+fu! CscopeAdd() " Add Cscope database named .cscope.out
+  let dir = getcwd()
+  let savedir = getcwd()
+  wh (dir != '/')
+    let scopefile = dir . '/' . ".cscope.out"
+    if filereadable(scopefile)
+      exe "cs add " scopefile
+      exe "cd " savedir
+      return dir
+    en
+    cd ..
+    let dir = getcwd()
+  endw
+  exe "cd " savedir
+endf
+
+"When editing a file, make screen display the name of the file you are editing
+function! SetTitle()
+  if $TERM =~ "^screen"
+    let l:title = 'vi: ' . expand('%:t')
+
+    if (l:title != 'vi: __Tag_List__')
+      let l:truncTitle = strpart(l:title, 0, 15)
+      silent exe '!echo -e -n "\033k' . l:truncTitle . '\033\\"'
+    endif
+  endif
+endfunction
+
+" Utilties for markdown filetype
+function! s:setupWrapping()
+  set wrap
+  set textwidth=79
+endfunction
+
+function! s:setupMarkup()
+  call s:setupWrapping()
+  map <buffer> <Leader>p :Mm <CR>
+endfunction
+
+" Utility to open URIs using Mac's open utility
+function! HandleURI()
+  let s:uri = matchstr(getline("."), '[a-z]*:\/\/[^ >,;:]*')
+  echo s:uri
+  if s:uri != ""
+    exec "!open \"" . s:uri . "\""
+  else
+    echo "No URI found in line."
+  endif
+endfunction
+"}}}
+
+" KeyMaps {{{
+" Shortcuts {{{
+" super paste
+inoremap <F3> <esc>:set paste<cr>mui<C-R>+<esc>mv'uV'v=:set nopaste<cr>
+nnoremap <F3> :set paste<cr>mui<C-R>+<esc>mv'uV'v=:set nopaste<cr>
+inoremap <F3> <esc>:set paste<cr>mui<C-R>+<esc>mv'uV'v=:set nopaste<cr>
+
+" Command + mappings
+nmap <F2> :.w !pbcopy<cr><cr>
+vmap <F2> :w !pbcopy<cr><cr>
+imap <F2> :w !pbcopy<cr><cr>
+
+" Clear last search
+" command C let @/=""
+
+" Sudo to write
+cmap w!! w !sudo tee % >/dev/null
+
+" " Open URIs using Mac's open command
+map <silent> <Leader>w :call HandleURI()<CR>
+
+" Which syntax highlighting group is under the cursor
+map <F10> :echo "hi<" . synIDattr(synID(line("."),col("."),1),"name") . '> trans<'
+      \ . synIDattr(synID(line("."),col("."),0),"name") . "> lo<"
+      \ . synIDattr(synIDtrans(synID(line("."),col("."),1)),"name") . ">"<CR>
+
+"Use <F12> to fix syntax highlighting when it is messed up
+noremap <F12> <Esc>:syntax sync fromstart<CR>
+inoremap <F12> <C-o>:syntax sync fromstart<CR>
+
+" Strip trailing whitespaces
+nnoremap <leader>W :%s/\s\+$//<cr>:let @/=''<CR>
+nnoremap <D-backspace> dd
+
+" Buffer and tab navigation with leader maps
+nnoremap <leader>bn :bn<cr>
+nnoremap <leader>bp :bp<cr>
+nnoremap <leader>tp :tp<cr>
+
+" Ack
+"nnoremap <leader>a :Ack 
+" Use \3 (like \# without the shift) to search recursively in PWD
+nnoremap <leader>3 :<C-u>Ack <C-r><C-w>
+
+" Reselect text that was just pasted (to indent maybe)
+nnoremap <leader>v V`]
+
+" Open a vertical split window
+nmap <leader>vs :vsplit<CR> <C-w><C-w>
+
+" Use tab to navigate vim windows
+nnoremap <tab> w
+
+" Fix backspace key from xterm
+inoremap  <Left><Del>
+"cnoremap  <Del>
+
+" No more reaching for the  escape key
+inoremap \\ <Esc><Right>
+cnoremap \\ <Esc>
+vnoremap \\ <Esc>
+
+" Typos in command mode
+cmap W<cr> w<cr>
+cmap Wa wa
+cmap WA wa
+cmap Wq wq
+
+nnoremap <D-/> \c
+
+" Opens an edit command with the path of the currently edited file filled in
+" Normal mode: <Leader>e
+map <Leader>e :e <C-R>=expand("%:p:h") . "/" <CR>
+
+" Opens a tab edit command with the path of the currently edited file filled in
+" Normal mode: <Leader>t
+map <Leader>te :tabe <C-R>=expand("%:p:h") . "/" <CR>
+
+" Inserts the path of the currently edited file into a command
+" Command mode: Ctrl+P
+cmap <C-P> <C-R>=expand("%:p:h") . "/" <CR>
+
+" FuzzyFinder
+nnoremap <C-t> :<C-u>FufFile 
+
+" }}}
+
+" Editing {{{
+" Cmd-Shift-UP/DOWN to move a line
+nmap <S-D-Up> [e
+nmap <S-D-Down> ]e
+" Cmd-Shift-UP/DOWN to move multiple lines
+vmap ^[[1;2A [egv
+vmap ^[[1;2B ]egv
+
+" Underline the current line with dashes in normal mode
+nnoremap <F6> yyp<c-v>$r-
+
+" Underline the current line with dashes in insert mode
+inoremap <F6> <Esc>yyp<c-v>$r-A
+
+" Automate closing curly braces
+inoremap {      {}<Left>
+inoremap {<CR>  {<CR>}<Esc>O
+"inoremap {{     {
+inoremap {}     {}
+inoremap {{{    {{{<CR>}}}<Esc>O
+inoremap "{{{    "{{{<CR>"}}}<Esc>O
+
+" Shift-tab to unindent when using spaces
+" imap <S-Tab> <C-o><<
+imap [Z <C-D>
+
+"Surround code with braces
+"nmap <Leader>{} O{<Esc>ddj>>ddkP
+"vmap <Leader>{} <Esc>o{<Esc>ddgv>gvdp
+
+" Add empty lines above/below
+nnoremap <silent> <C-j> O<Esc>j
+nnoremap <silent> <C-k> o<Esc>k
+
+" Allow saving of files as sudo when I forgot to start vim using sudo.
+cmap w!! w !sudo tee > /dev/null %
+"}}}
+
+" Pasting {{{
+"" Toggle auto-indent (Use when pasting from another application)
+nnoremap <F5> :set invpaste paste?<CR>
+set pastetoggle=<F5>
+set showmode      " Show on status bar when we are in insert mode
+" }}}
+"}}}
+
+" FileType AutoCommand----- {{{
+" All Files {{{
+" Change cwd to current buffer's directory
+"autocmd BufEnter * lcd %:p:h
+
+" Set Title for screen
+autocmd BufEnter,BufFilePost * call SetTitle()
+" Save all files when leaving the window
+"au FocusLost * silent! :wa
+
+" NERDTree everywhere
+"autocmd VimEnter * NERDTree
+"autocmd BufAdd * NERDTreeMirror
+"autocmd BufAdd * wincmd l
+autocmd FileType nerdtree setlocal nonumber
+autocmd FileType taglist setlocal nonumber
+" }}}
+
+" Make {{{
+au FileType make  set noexpandtab   " Make uses real tabls
+" }}}
+
+" Vim {{{
+au BufRead *.vimrc setfiletype vim
+au FileType vim setlocal foldmethod=marker
+au! BufWritePost [\._]vimrc source ~/.vimrc
+"}}}
+
+" Ruby {{{
+au BufRead,BufNewFile {Gemfile,Rakefile,Vagrantfile,Thorfile,config.ru}    set ft=ruby
+map <buffer> <F8> :w<CR>:!/usr/bin/env ruby % <CR>
+" }}}
+
+" Markdown {{{
+" md, markdown, and mk are markdown and define buffer-local preview
+au BufRead,BufNewFile *.{md,markdown,mdown,mkd,mkdn} call s:setupMarkup()
+au BufRead,BufNewFile *.txt call s:setupWrapping()
+"}}}
+
+" Python {{{
+" make python follow PEP8 ( http://www.python.org/dev/peps/pep-0008/ )
+au FileType python  set tabstop=4 textwidth=79
+"}}}
+
+" C {{{
+au BufNewFile,BufRead *.c setlocal foldmethod=syntax
+"au BufNewFile, BufRead *.c imap { <Esc>:call ReplaceCurly()<CR>"_cl
+"}}}
+"
+" Java {{{
+" Close curly braces in Java
+"au BufNewFile, BufRead *.java imap { <Esc>:call ReplaceCurly()<CR>"_cl
+" }}}
+
+"GUI Settings {{{
+if has('gui_running')
+
+  "set guifont=Droid\ Sans\ Mono:h13
+  set guifont=Inconsolata-dz\ for\ Powerline:h14
+
+  " Cmd-Shift tab navigation
+  nnoremap <D-S-Left> :tabprev<CR>
+  nnoremap <D-S-Right> :tabnext<CR>
+  inoremap <D-S-Left> <Esc>:tabprev<CR>
+  inoremap <D-S-Right> <Esc>:tabnext<CR>
+
+  " Use maximal screen area
+  set lines=999 columns=9999
+
+  " HIde all scrollbars
+  set guioptions-=lrLR
+  
+  
+  " TaskWarrior Vim {{{
+  " default task report type
+  let g:task_report_name     = 'next'
+  " whether the field under the cursor is highlighted
+  let g:task_highlight_field = 1
+  " can not make change to task data when set to 1
+  let g:task_readonly        = 0
+  " vim built-in term for task undo in gvim
+  let g:task_gui_term        = 1
+  " allows user to override task configurations. Seperated by space. Defaults to ''
+  let g:task_rc_override     = 'rc.defaultwidth=999'
+  " default fields to ask when adding a new task
+  let g:task_default_prompt  = ['due', 'description', 'project']
+  " whether the info window is splited vertically
+  let g:task_info_vsplit     = 0
+  " info window size
+  let g:task_info_size       = 15
+  " info window position
+  let g:task_info_position   = 'belowright'
+  " directory to store log files defaults to taskwarrior data.location
+  let g:task_log_directory   = '~/.task'
+  " max number of historical entries
+  let g:task_log_max         = '20'
+  " forward arrow shown on statusline
+  let g:task_left_arrow      = ' <<'
+  " backward arrow ...
+  let g:task_left_arrow      = '>> '
+  ""}}}
+
+endif
+
+"}}}

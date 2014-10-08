@@ -1,0 +1,3 @@
+map \cd=:!rw task %TASKID modify due:$(read -p ? DAYS; echo $DAYS)days<Return>
+map \ca=:!r task %TASKID start<Return>
+map \ct=:!r task %TASKID modify due:1days<Return>
