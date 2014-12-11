@@ -33,7 +33,7 @@ DISABLE_UNTRACKED_FILES_DIRTY="true"
 # Which plugins would you like to load? (plugins can be found in ~/.oh-my-zsh/plugins/*)
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
-plugins=(git brew common-aliases colorize extract gem jsontools mvn rails redis-cli ruby rvm taskwarrior sudo systemadmin vundle zsh-syntax-highlighting)
+plugins=(git pip python brew common-aliases colorize extract gem jsontools mvn rails redis-cli ruby rvm taskwarrior sudo systemadmin vundle zsh-syntax-highlighting zsh-history-substring-search)
 
 source $ZSH/oh-my-zsh.sh
 
